@@ -16,10 +16,7 @@ import csv
 import math
 import random
 import collections
-
-#for testing script run time
-start_time = time.perf_counter()
-
+import pprint
 
 def classify_testing_set(tree, data):
   """Returns success rate of classifying data with supplied tree"""
@@ -147,31 +144,36 @@ def choose_best_attribute(data, attributes):
       bestAttribute = attribute
       informationGain = currentInformationGain
   return bestAttribute
+  
+for i in range(0,10):
+  print("Run #",i)
+  #for testing script run time
+  start_time = time.perf_counter()
 
+  #open CSV containing data
+  with open('clean-data-subset.csv') as file:
+    reader = csv.reader(file)
+    #load data into list of tuples
+    columns = ('Age','Gender','Income','Education','Tobacco',
+               'Alcohol','IllegalDrugs','Depression',
+               'AlcoholOrDrugTreatment','MentalHealthTreatment',
+               'ArrestedOrJailed')
+    data = [tuple(row) for row in reader]
 
-#open CSV containing data
-with open('clean-data-subset.csv') as file:
-  reader = csv.reader(file)
-  #load data into list of tuples
-  columns = ('Age','Gender','Income','Education','Tobacco',
-             'Alcohol','IllegalDrugs','Depression',
-             'AlcoholOrDrugTreatment','MentalHealthTreatment',
-             'ArrestedOrJailed')
-  data = [tuple(row) for row in reader]
+  #split data into training and testing lists (75% training, 25% testing)
+  random.shuffle(data)
+  breakPoint = int((len(data)*.75))
+  trainingData = data[:breakPoint]
+  testingData = data[breakPoint:]
 
-#split data into training and testing lists (75% training, 25% testing)
-random.shuffle(data)
-breakPoint = int((len(data)*.75))
-trainingData = data[:breakPoint]
-testingData = data[breakPoint:]
+  #build classifying decision tree based on training set
+  decisionTree = build_decision_tree(trainingData, list(range(0,10)))
+  pprint.pprint(decisionTree)
+  
+  #run test set through decision tree
+  successRate = classify_testing_set(decisionTree, testingData)
 
-#build classifying decision tree based on training set
-decisionTree = build_decision_tree(trainingData, list(range(0,10)))
-
-#run test set through decision tree
-successRate = classify_testing_set(decisionTree, testingData)
-
-print("Success rate was:",successRate * 100)
-      
-#display script run time
-print("Run time:",time.perf_counter() - start_time)
+  print("Success rate was:",successRate * 100)
+        
+  #display script run time
+  print("Run time:",time.perf_counter() - start_time)
